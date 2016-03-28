@@ -66,10 +66,16 @@ export default class NavBar extends React.Component {
         if (state.hideNavBar || child.hideNavBar || selected.hideNavBar){
             return null;
         }
+        var title = state.children.map(this._renderTitle, this);
+        if (selected.direction === 'vertical') {
+            console.log('lalala');
+            title = this._renderTitle(selected, 0);
+        }
+
         return (
             <Animated.View
                 style={[styles.header, state.navigationBarStyle, selected.navigationBarStyle]}>
-                {state.children.map(this._renderTitle, this)}
+                {title}
                 {this._renderBackButton()}
                 {this._renderLeftButton()}
                 {this._renderRightButton()}
@@ -78,33 +84,30 @@ export default class NavBar extends React.Component {
     }
 
     _renderBackButton() {
-      let backButtonImage;
-
-      if (this.props.navigationState.index === 0) {
-        if(!!this.context.drawer && typeof this.context.drawer.toggle === 'function'){
-
-          backButtonImage = this.props.navigationState.drawerImage || require('./menu_burger.png');
-
-          return (
-            <TouchableOpacity style={[styles.backButton, this.props.navigationState.leftButtonStyle]} onPress={() => {
-              var drawer = this.context.drawer;
-              drawer.toggle();
-            }}>
-                <Image source={backButtonImage} style={[styles.backButtonImage, this.props.navigationState.barButtonIconStyle]}/>
-            </TouchableOpacity>
-          );
-        }else{
-          return null;
+        const state = this.props.navigationState;
+        const childState = state.children[state.index];
+        if ((childState.onLeft && childState.leftTitle) || (state.onLeft && state.leftTitle)){
+            return null;
         }
-      }
-
-      backButtonImage = this.props.navigationState.backButtonImage || require('./back_chevron.png');
-
-      return (
-          <TouchableOpacity style={[styles.backButton, this.props.navigationState.leftButtonStyle]} onPress={Actions.pop}>
-              <Image source={backButtonImage} style={[styles.backButtonImage, this.props.navigationState.barButtonIconStyle]}/>
-          </TouchableOpacity>
-      );
+        if (state.index === 0) {
+            if(!!this.context.drawer && typeof this.context.drawer.toggle === 'function'){
+                return (
+                    <TouchableOpacity style={[styles.backButton, this.props.navigationState.leftButtonStyle]} onPress={() => {
+						var drawer = this.context.drawer;
+						drawer.toggle();
+					}}>
+                        <Image source={require('./menu_burger.png')} style={[styles.backButtonImage, this.props.navigationState.barButtonIconStyle]}/>
+                    </TouchableOpacity>
+                );
+            } else {
+                return null;
+            }
+        }
+        return (
+            <TouchableOpacity style={[styles.backButton, this.props.navigationState.leftButtonStyle]} onPress={Actions.pop}>
+                <Image source={require('./back_chevron.png')} style={[styles.backButtonImage, this.props.navigationState.barButtonIconStyle]}/>
+            </TouchableOpacity>
+        );
     }
 
     _renderRightButton() {
@@ -156,13 +159,9 @@ export default class NavBar extends React.Component {
               inputRange: [index - 1, index, index + 1],
               outputRange: [0, 1, 0],
             }),
-            left: this.props.position.interpolate({
+            top: this.props.position.interpolate({
               inputRange: [index - 1, index + 1],
-              outputRange: [200, -200],
-            }),
-            right: this.props.position.interpolate({
-              inputRange: [index - 1, index + 1],
-              outputRange: [-200, 200],
+              outputRange: [30, 10],
             }),
           },
         ]}>
@@ -175,7 +174,7 @@ export default class NavBar extends React.Component {
 
 
 NavBar.contextTypes = {
-  drawer: React.PropTypes.object
+    drawer: React.PropTypes.object
 }
 
 const styles = StyleSheet.create({
@@ -193,13 +192,10 @@ const styles = StyleSheet.create({
     header: {
         backgroundColor: '#EFEFF2',
         paddingTop: 20,
-        top: 0,
+
         height: 64,
-        right: 0,
-        left: 0,
         borderBottomWidth: 0.5,
         borderBottomColor: '#828287',
-        position: 'absolute',
     },
     backButton: {
         width: 29,
