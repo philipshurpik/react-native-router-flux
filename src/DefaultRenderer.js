@@ -6,18 +6,18 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-import React, {Component, Animated, StyleSheet, ScrollView, Text, NavigationExperimental} from 'react-native';
+import React, {Component, Animated, PropTypes, StyleSheet, ScrollView, View, Text, NavigationExperimental} from "react-native";
 const {
     AnimatedView: NavigationAnimatedView,
     Card: NavigationCard,
     RootContainer: NavigationRootContainer,
     Header: NavigationHeader,
     } = NavigationExperimental;
-import Actions from './Actions';
-import getInitialState from './State';
-import Reducer from './Reducer';
-import TabBar from './TabBar';
-import NavBar from './NavBar';
+import Actions from "./Actions";
+import getInitialState from "./State";
+import Reducer from "./Reducer";
+import TabBar from "./TabBar";
+import NavBar from "./NavBar";
 
 export default class DefaultRenderer extends Component {
     constructor(props) {
@@ -25,6 +25,12 @@ export default class DefaultRenderer extends Component {
         this._renderCard = this._renderCard.bind(this);
         this._renderScene = this._renderScene.bind(this);
         this._renderHeader = this._renderHeader.bind(this);
+    }
+
+    getChildContext() {
+        return {
+            navigationState: this.props.navigationState,
+        };
     }
 
     render() {
@@ -37,26 +43,41 @@ export default class DefaultRenderer extends Component {
             Component = TabBar;
         }
         if (Component) {
-            return <Component {...navigationState} navigationState={navigationState}/>
+            return (
+                <View style={[{flex: 1}, navigationState.sceneStyle]}>
+                    <Component {...navigationState} navigationState={navigationState} />
+                </View>
+            )
         }
 
         const selected = navigationState.children[navigationState.index];
         //return <DefaultRenderer key={selected.key} navigationState={selected}/>
 
-        const DEFAULT_DURATION = 250;
-        const stateDuration = navigationState.duration >= 0 ? navigationState.duration : DEFAULT_DURATION;
-        const duration = selected.duration >= 0 ? selected.duration : stateDuration;
+        let applyAnimation = selected.applyAnimation || navigationState.applyAnimation;
+        let style = selected.style || navigationState.style;
+        let direction = selected.direction || navigationState.direction || "horizontal";
+
+        let optionals = {};
+        if (applyAnimation) {
+            optionals.applyAnimation = applyAnimation;
+        } else {
+            let duration = selected.duration;
+            if (duration === null || duration === undefined) duration = navigationState.duration;
+            if (duration !== null && duration !== undefined) {
+                optionals.applyAnimation = function (pos, navState) {
+                    Animated.timing(pos, {toValue: navState.index, duration}).start();
+                };
+            }
+        }
 
         return (
             <NavigationAnimatedView
                 navigationState={navigationState}
-                style={[styles.animatedView, navigationState.style]}
+                style={[styles.animatedView, style]}
                 renderOverlay={this._renderHeader}
-                direction={navigationState.direction || 'horizontal'}
-                setTiming={(pos, navState) =>
-                    Animated.timing(pos, {toValue: navState.index, duration}).start()
-                }
+                direction={direction}
                 renderScene={this._renderCard}
+                {...optionals}
             />
         );
     }
@@ -69,14 +90,16 @@ export default class DefaultRenderer extends Component {
     }
 
     _renderCard(/*NavigationSceneRendererProps*/ props) {
+        const { key, direction, panHandlers, getSceneStyle } = props.scene.navigationState;
+        const style = getSceneStyle ? getSceneStyle(props) : null;
         return (
             <NavigationCard
                 {...props}
-                key={'card_' + props.scene.navigationState.key}
-                direction={props.scene.navigationState.direction || 'horizontal'}
-                panHandlers={props.scene.navigationState.panHandlers }
+                key={'card_' + key}
+                direction={direction || 'horizontal'}
+                panHandlers={panHandlers}
                 renderScene={this._renderScene}
-                style={{backgroundColor:'transparent'}}
+                style={style}
             />
         );
     }
@@ -87,10 +110,14 @@ export default class DefaultRenderer extends Component {
 
 }
 
+DefaultRenderer.childContextTypes = {
+    navigationState: PropTypes.any,
+};
+
 const styles = StyleSheet.create({
     animatedView: {
         flex: 1,
-        backgroundColor:'transparent'
+        backgroundColor:"transparent"
     },
 });
 

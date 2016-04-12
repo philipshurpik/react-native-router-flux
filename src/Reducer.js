@@ -7,15 +7,15 @@
  *
  */
 
-import {PUSH_ACTION, POP_ACTION2, FOCUS_ACTION, JUMP_ACTION, INIT_ACTION, REPLACE_ACTION, RESET_ACTION, POP_ACTION, REFRESH_ACTION} from './Actions';
-import assert from 'assert';
-import Immutable from 'immutable';
-import {getInitialState} from './State';
+import {PUSH_ACTION, POP_ACTION2, FOCUS_ACTION, JUMP_ACTION, INIT_ACTION, REPLACE_ACTION, RESET_ACTION, POP_ACTION, REFRESH_ACTION} from "./Actions";
+import assert from "assert";
+import Immutable from "immutable";
+import {getInitialState} from "./State";
 
 const checkPropertiesEqual = (action, lastAction) => {
   let isEqual = true;
   for(let i in action) {
-    if(action.hasOwnProperty(i) && ['key', 'type', 'parent'].indexOf(i) == -1) {//property is passed as argument
+    if(action.hasOwnProperty(i) && ["key", "type", "parent"].indexOf(i) == -1) {//property is passed as argument
       if(action[i] != lastAction[i]) {
         isEqual = false;
       }
@@ -47,14 +47,28 @@ function inject(state, action, props, scenes) {
             case POP_ACTION2:
             case POP_ACTION:
                 assert(!state.tabs, "pop() operation cannot be run on tab bar (tabs=true)")
-                return {...state, index:state.index-1, children:state.children.slice(0, -1) };
+                return {
+                    ...state,
+                    index:state.index-1,
+                    from: state.children[state.children.length - 1],
+                    children:state.children.slice(0, -1),
+                };
             case REFRESH_ACTION:
-                return {...state, ...props};
+                return {
+                    ...state,
+                    ...props,
+                    from: null
+                };
             case PUSH_ACTION:
                 if (state.children[state.index].sceneKey == action.key && !props.clone && checkPropertiesEqual(action, state.children[state.index])){
                     return state;
                 }
-                return {...state, index:state.index+1, children:[...state.children, getInitialState(props, scenes, state.index + 1, action)]};
+                return {
+                    ...state,
+                    index:state.index+1,
+                    from: null,
+                    children:[...state.children, getInitialState(props, scenes, state.index + 1, action)]
+                };
             case JUMP_ACTION:
                 assert(state.tabs, "Parent="+state.key+" is not tab bar, jump action is not valid");
                 let ind = -1;
@@ -79,7 +93,7 @@ function inject(state, action, props, scenes) {
 
 
 function findElement(state, key, type) {
-    if (type === REFRESH_ACTION ? state.key === key : state.sceneKey === key) {
+    if ((type === REFRESH_ACTION && state.key === key) || state.sceneKey === key) {
         return state;
     }
     if (state.children) {

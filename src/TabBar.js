@@ -1,8 +1,8 @@
-import React, {View, Text, Component, NavigationExperimental} from 'react-native';
-import Tabs from 'react-native-tabs';
-import DefaultRenderer from './DefaultRenderer';
-import Actions from './Actions';
-import NavBar from './NavBar';
+import React, {View, Text, Component, NavigationExperimental} from "react-native";
+import Tabs from "react-native-tabs";
+import DefaultRenderer from "./DefaultRenderer";
+import Actions from "./Actions";
+import NavBar from "./NavBar";
 const {
     AnimatedView: NavigationAnimatedView,
     CardStack: NavigationCardStack,
@@ -22,6 +22,17 @@ export default class extends Component {
         }
         Actions[el.props.name]();
     }
+
+    _renderScene(props) {
+        if (props.layout) {
+            // for 0.24+, props is /*NavigationSceneRendererProps*/ (add flow def above when phasing out < 0.24 support)
+            return <DefaultRenderer key={props.scene.navigationState.key} navigationState={props.scene.navigationState}/>;
+        } else {
+            // for < 0.24
+            return <DefaultRenderer key={props.key} navigationState={props} />;
+        }
+    }
+
     render(){
         const state = this.props.navigationState;
         let selected = state.children[state.index];
@@ -33,14 +44,9 @@ export default class extends Component {
                     <NavigationView
                         navigationState={this.props.navigationState}
                         style={{flex:1}}
-                        renderScene={(tabState, index) => (
-                          <DefaultRenderer
-                            key={tabState.key}
-                            navigationState={tabState}
-                          />
-                        )}
+                        renderScene={this._renderScene}
                     />
-            {!hideTabBar && state.children.filter(el=>el.icon).length>0 && <Tabs style={[{backgroundColor:'white'}, state.tabBarStyle]} onSelect={this.onSelect.bind(this)} {...state}
+            {!hideTabBar && state.children.filter(el=>el.icon).length>0 && <Tabs style={[{backgroundColor:"white"}, state.tabBarStyle]} onSelect={this.onSelect.bind(this)} {...state}
                                                                                  selected={state.children[state.index].sceneKey}>
                     {state.children.filter(el=>el.icon || this.props.tabIcon).map(el=>{
                         const Icon = el.icon || this.props.tabIcon;

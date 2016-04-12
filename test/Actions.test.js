@@ -56,15 +56,18 @@ describe('Actions', () => {
         Actions.callback = scene=>state = reducer(state, scene);
         expect(state).equal(undefined);
         Actions.init();
-        expect(state.key).equal("modal");
+        expect(state.key).equal("0_modal");
 
         Actions.messaging();
-        expect(state.scenes.current).equal("messaging");
-        //Actions.pop();
+        expect(currentScene.key).equal("messaging");
+
         Actions.login();
-        expect(state.children[1].key).equal("login");
+        expect(state.children[1].key).equal("1_login");
         expect(state.children[1].children.length).equal(1);
-        expect(state.children[1].children[0].key).equal("loginModal1");
+        expect(state.children[1].children[0].key).equal("0_loginModal1");
+
+        Actions.pop();
+        expect(state.from.key).equal("1_login");
 
     });
 
