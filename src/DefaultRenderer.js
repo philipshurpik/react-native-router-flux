@@ -92,21 +92,23 @@ export default class DefaultRenderer extends Component {
     }
 
     _renderCard(/*NavigationSceneRendererProps*/ props) {
-        const isVertical = props.scene.navigationState.direction === "vertical";
+        var state = props.scene.navigationState;
 
-        const animationStyle = props.scene.navigationState.animationStyle || (isVertical ?
+        const isVertical = state.direction === "vertical";
+
+        const animationStyle = state.animationStyle || (isVertical ?
                 NavigationCardStackStyleInterpolator.forVertical(props) :
                 NavigationCardStackStyleInterpolator.forHorizontal(props));
 
-        const panHandlers = props.scene.navigationState.panHandlers || (isVertical ?
-                NavigationCardStackPanResponder.forVertical(props) :
-                NavigationCardStackPanResponder.forHorizontal(props));
+        const panHandlers = state.panHandlers !== undefined ? state.panHandlers : (isVertical ?
+            NavigationCardStackPanResponder.forVertical(props) :
+            NavigationCardStackPanResponder.forHorizontal(props));
 
         return (
             <NavigationCard
                 {...props}
-                style={[animationStyle, props.scene.navigationState.style]}
-                key={"card_" + props.scene.navigationState.key}
+                style={[animationStyle, state.style]}
+                key={"card_" + state.key}
                 panHandlers={panHandlers}
                 renderScene={this._renderScene}
             />
