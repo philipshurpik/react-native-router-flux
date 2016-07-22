@@ -37,7 +37,7 @@
     }
   ],
   "dependencies": {
-    "react-native-tabs": "1.0.7",
+    "react-native-tabs": "1.0.9",
     "react-static-container": "1.0.1"
   },
   "devDependencies": {

@@ -57,6 +57,7 @@ class TabBar extends Component {
             style={[{ backgroundColor: 'white' }, state.tabBarStyle]}
             selectedIconStyle={[{ backgroundColor: 'white' }, state.tabBarSelectedItemStyle]}
             onSelect={this.onSelect} {...state}
+            pressOpacity={state.pressOpacity}
             selected={state.children[state.index].sceneKey}
           >
             {state.children.filter(el => el.icon || this.props.tabIcon).map(el => {
