@@ -360,6 +360,7 @@ function reducer({ initialState, scenes }) {
           ActionMap[action.type] === ActionConst.BACK ||
           ActionMap[action.type] === ActionConst.POP_AND_REPLACE ||
           ActionMap[action.type] === ActionConst.REFRESH ||
+          ActionMap[action.type] === ActionConst.REMOVE_FROM_STACK ||
           ActionMap[action.type] === ActionConst.POP_TO) {
         if (!action.key && !action.parent) {
           action = { ...getCurrent(state), ...action };
