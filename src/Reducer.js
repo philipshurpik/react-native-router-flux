@@ -424,6 +424,7 @@ function reducer({ initialState, scenes }) {
       case ActionConst.JUMP:
       case ActionConst.REPLACE:
       case ActionConst.RESET:
+      case ActionConst.REMOVE_FROM_STACK:
         return update(state, action);
 
       default:
