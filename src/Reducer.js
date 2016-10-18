@@ -265,7 +265,7 @@ function inject(state, action, props, scenes) {
         ...action,
       };
       const newChildren = state.children
-        .filter(item => !props.sceneKeys.includes(item.name))
+        .filter(item => !props.sceneKeys.includes(item.sceneKey))
         .slice(0, -1)
         .concat(getInitialState(props, scenes, state.index, newAction));
 
