@@ -259,19 +259,15 @@ function inject(state, action, props, scenes) {
         children: state.children,
       };
     case ActionConst.REMOVE_FROM_STACK:
-      const newChildren = state.children ? state.children.reduce((scenes, item) =>
-        props.sceneNames.includes(item.name) ? scenes : scenes.concat(item), []
-      ) : state.children;
+      assert(props.sceneKeys, 'props should contain `sceneKeys` to remove');
       const newAction = {
         duration: 0,  // do not animate
         ...action,
       };
-      newChildren[newChildren.length - 1] = getInitialState(
-        props,
-        scenes,
-        state.index,
-        newAction
-      );
+      const newChildren = state.children
+        .filter(item => !props.sceneKeys.includes(item.name))
+        .slice(0, -1)
+        .concat(getInitialState(props, scenes, state.index, newAction));
 
       return {
         ...state,
